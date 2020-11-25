@@ -1,12 +1,14 @@
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
 from .models import Product, Order, OrderDetail
 from .serializers import ProductSerializer, OrderSerializer
 
 
 # Create your views here.
 class ProductViewSet(viewsets.ModelViewSet):
+    permission_classes = [IsAuthenticated]
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
 
@@ -20,6 +22,7 @@ class ProductViewSet(viewsets.ModelViewSet):
 
 
 class OrderViewSet(viewsets.ModelViewSet):
+    permission_classes = [IsAuthenticated]
     queryset = Order.objects.all()
     serializer_class = OrderSerializer
 
@@ -31,7 +34,13 @@ class OrderViewSet(viewsets.ModelViewSet):
         products = []
         duplicated_products = []
         product_in_zero = []
+        product_stock_zero = []
         for data in request.data:
+            product = Product.objects.get(pk=data.get('product'))
+            stock = product.stock - data.get('quantity')
+            if stock < 0:
+                product_stock_zero.append(data.get('product'))
+
             if data.get('quantity') == 0:
                 product_in_zero.append(data.get('product'))
 
@@ -44,7 +53,10 @@ class OrderViewSet(viewsets.ModelViewSet):
             errors.append('Duplicated product:' + str(duplicated_products))
 
         if product_in_zero:
-            errors.append('Product in zero:' + str(product_in_zero))
+            errors.append('Product quantity in zero:' + str(product_in_zero))
+
+        if product_stock_zero:
+            errors.append('Product stock zero:' + str(product_stock_zero))
 
         if errors:
             content = {'error': str(errors)}
