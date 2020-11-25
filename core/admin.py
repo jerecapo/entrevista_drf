@@ -7,10 +7,6 @@ class ProductAdmin(admin.ModelAdmin):
     list_display = ('id', 'name', 'price', 'stock')    
 
 
-class OrderDetailAdmin(admin.ModelAdmin):
-    list_display = ('id', 'order', 'quantity', 'product')   
-
-
 class OrderDetailInline(admin.TabularInline):
     model = OrderDetail
     extra = 3
@@ -24,4 +20,3 @@ class OrderAdmin(admin.ModelAdmin):
 
 admin.site.register(Product, ProductAdmin)
 admin.site.register(Order, OrderAdmin)
-admin.site.register(OrderDetail, OrderDetailAdmin)
